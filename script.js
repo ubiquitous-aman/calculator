@@ -1,65 +1,83 @@
-let a = null
-let operator = null
+let evaluate;
+let setMode;
 
-function press(num){
-document.getElementById("display").value += num
+let errorState=false;
+let DEG=true;
+
+Module.onRuntimeInitialized = () => {
+
+evaluate = Module.cwrap(
+"evaluate",
+"number",
+["string"]
+);
+
+setMode = Module.cwrap(
+"setDegreeMode",
+null,
+["number"]
+);
+
+};
+
+function press(val){
+
+const d=document.getElementById("display");
+
+if(errorState){
+d.value="";
+errorState=false;
 }
 
-function operation(op){
+d.value+=val;
 
-a = parseFloat(document.getElementById("display").value)
-operator = op
-document.getElementById("display").value = ""
+}
+
+function clearDisplay(){
+
+document.getElementById("display").value="";
 
 }
 
 function calculate(){
 
-let b = parseFloat(document.getElementById("display").value)
+const d=document.getElementById("display");
 
-let result
+try{
 
-if(operator == "+")
-result = Module._add(a,b)
+const r=evaluate(d.value);
 
-if(operator == "-")
-result = Module._subtract(a,b)
+d.value=r;
 
-if(operator == "*")
-result = Module._multiply(a,b)
+}
+catch{
 
-if(operator == "/")
-result = Module._divide(a,b)
-
-document.getElementById("display").value = result
+d.value="Error";
+errorState=true;
 
 }
 
-function sqrt(){
-let x = parseFloat(document.getElementById("display").value)
-document.getElementById("display").value = Module._mysqrt(x)
 }
 
-function sin(){
-let x = parseFloat(document.getElementById("display").value)
-document.getElementById("display").value = Module._mysin(x)
+function toggleMode(){
+
+DEG=!DEG;
+
+setMode(DEG?1:0);
+
+document.getElementById("mode").innerText=DEG?"DEG":"RAD";
+
 }
 
-function cos(){
-let x = parseFloat(document.getElementById("display").value)
-document.getElementById("display").value = Module._mycos(x)
+document.addEventListener("keydown",(e)=>{
+
+if(errorState){
+document.getElementById("display").value="";
+errorState=false;
 }
 
-function tan(){
-let x = parseFloat(document.getElementById("display").value)
-document.getElementById("display").value = Module._mytan(x)
+if(e.key==="Enter"){
+calculate();
 }
 
-function log(){
-let x = parseFloat(document.getElementById("display").value)
-document.getElementById("display").value = Module._mylog(x)
-}
-
-function clearDisplay(){
-document.getElementById("display").value=""
-}
+});
